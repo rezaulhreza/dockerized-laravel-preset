@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    libpq-dev
+    libpq-dev \
+    openssl \
+    libssl-dev
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip pdo_pgsql
@@ -20,6 +22,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install Node.js and npm
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get install -y nodejs
+ENV NODE_PATH=/usr/local/lib/node_modules
+ENV PATH=$PATH:/usr/local/lib/node_modules/npm/bin/
 
 # Set working directory
 WORKDIR /app
@@ -29,6 +33,7 @@ COPY . /app
 
 # Install dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN npm install && npm run build
 
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
